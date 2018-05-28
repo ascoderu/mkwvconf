@@ -4,8 +4,11 @@
 import sys
 import string
 import os
-from xml import xpath
-from xml.dom.minidom import parse
+
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
 
 class Mkwvconf:
 
@@ -34,7 +37,7 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
   #########
 
   def __init__(self):
-    self.doc = parse(self.xmlPath)
+    self.doc = ET.parse(self.xmlPath)
 
   def displayIntro(self):
     os.system('clear')
@@ -42,7 +45,7 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
 
   def getCountryCodes(self):
     """returns a list of all country codes"""
-    return [ str(n.value) for n in self.getNodesFromXml("country/@code") ]
+    return [ str(n.get('code')) for n in self.getNodesFromXml("country[@code]") ]
 
 
   def selectCountryCode(self):
@@ -62,12 +65,12 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
 
   def getNodesFromXml(self, xquery):
     """returns results of xquery as a list"""
-    return xpath.Evaluate(xquery, self.doc.documentElement)
+    return self.doc.findall(xquery)
 
   def getProviders(self, countryCode):
     """returns list of providers for countryCode"""
     nodes = self.getNodesFromXml('country[@code=\'' + countryCode +  '\']/provider/name')
-    return [ n.firstChild.nodeValue for n in nodes ]
+    return [ n.text for n in nodes ]
 
   def selectProvider(self, countryCode):
     """lets user choose a provider and returns the chosen provider name"""
@@ -79,9 +82,9 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
 
   def selectApn(self, node):
       """takes a provider node, lets user select one apn (if several exist) and returns the chosen node"""
-      apnNode = node.getElementsByTagName("apn")[0]
-      apns = node.getElementsByTagName("apn")
-      apnnames = [ n.getAttribute("value") for n in apns ]
+      apnNode = node.findall("*/apn")[0]
+      apns = node.findall("*/apn")
+      apnnames = [ n.get("value") for n in apns ]
 
       apncount = len(apns)
       if apncount == 1:
@@ -213,17 +216,15 @@ Stupid Mode = 1
     """return initially filled parameter dictionary from provider xml node"""
     parameters = {}
 
-    apn = apnNode.getAttribute("value")
+    apn = apnNode.get("value")
     parameters["apn"] = apn
 
-    usrNodes = apnNode.getElementsByTagName("username")
-    if len(usrNodes) != 0:
-        usr = usrNodes[0].firstChild.nodeValue
+    usr = apnNode.findtext("username")
+    if usr:
         parameters["usr"] = usr
 
-    pwNodes = apnNode.getElementsByTagName("password")
-    if len(pwNodes) != 0:
-        pw = pwNodes[0].firstChild.nodeValue
+    pw = apnNode.findtext("password")
+    if pw:
         parameters["pw"] = pw
 
     return parameters
