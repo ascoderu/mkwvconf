@@ -1,14 +1,23 @@
-#!/usr/bin/python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import sys
-import string
 import os
 
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
     import xml.etree.ElementTree as ET
+
+try:
+    raw_input
+except NameError:
+    raw_input = input
+
+try:
+    from string import atoi
+except ImportError:
+    atoi = int
 
 class Mkwvconf:
 
@@ -41,7 +50,7 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
 
   def displayIntro(self):
     os.system('clear')
-    print self.introMessage
+    print(self.introMessage)
 
   def getCountryCodes(self):
     """returns a list of all country codes"""
@@ -53,8 +62,8 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
 
     l = self.getCountryCodes()
 
-    print "\nAvailable country codes:\n"
-    print l
+    print("\nAvailable country codes:\n")
+    print(l)
 
     country = ""
 
@@ -107,13 +116,13 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
     if editConf in ["", "Y",  "y"]:
         self.writeConfig(parameters)
     else:
-        print "\n\nDone. Insert the following into " + self.configPath + " and run 'wvdial " + parameters["profileName"] + "' to start the connection.\n\n"
-        print self.formatConfig(parameters)
+        print("\n\nDone. Insert the following into " + self.configPath + " and run 'wvdial " + parameters["profileName"] + "' to start the connection.\n\n")
+        print(self.formatConfig(parameters))
 
   def writeConfig(self, parameters):
     """append or replace the configuration section to wvdial.conf"""
     if not os.path.exists(self.configPath):
-        print "\nWarning: " + self.configPath + " doesn't exist, creating new file."
+        print("\nWarning: " + self.configPath + " doesn't exist, creating new file.")
         f = open(self.configPath, 'w')
         f.close()
 
@@ -126,11 +135,11 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
     snippetStart = text.find("[Dialer %(profileName)s]" % parameters)
     if snippetStart != -1:
         snippetEnd = text.find("[Dialer ", snippetStart+1)
-        print "\nThe following part of wvdial.conf will be replaced: \n\n" + text[snippetStart:snippetEnd]
-        print "by: \n\n" + section
+        print("\nThe following part of wvdial.conf will be replaced: \n\n" + text[snippetStart:snippetEnd])
+        print("by: \n\n" + section)
         text = text.replace(text[snippetStart:snippetEnd], section)
     else:
-        print "\nThe following will be appended to wvdial.conf: \n\n" + section
+        print("\nThe following will be appended to wvdial.conf: \n\n" + section)
         text += "\n" + section
 
     editConf = raw_input("Write to file? Y/n: ")
@@ -139,7 +148,7 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
         f.write(text)
         f.close()
 
-        print "wvdial.conf edited successfully, run 'wvdial " + parameters["profileName"] + "' to start the connection.\n\n"
+        print("wvdial.conf edited successfully, run 'wvdial " + parameters["profileName"] + "' to start the connection.\n\n")
 
   def formatConfig(self, parameters):
     """formats the information contained in parameters into a valid wvdial.conf format"""
@@ -180,24 +189,24 @@ Stupid Mode = 1
   def getUserChoice(self, l, header, prompt):
     """takes a string list, a text prompt and a header, and returns user choice"""
 
-    print
-    print header
-    print
+    print('')
+    print(header)
+    print('')
 
     count = len(l)
     for k, v in zip(range(count), l):
-      print str(k) + ": " + v
+      print(str(k) + ": " + v)
 
     choice = -1
     while choice >= count or choice < 0:
       inputStr = self.getUserInput(prompt + " [0-" + str(count - 1) + "]:")
       try:
-          choice = string.atoi(inputStr)
+          choice = atoi(inputStr)
           if choice < 0 or choice >= count:
-              print "Input needs to be between 0 and " + str(count - 1)
+              print("Input needs to be between 0 and " + str(count - 1))
       except:
           choice = -1
-          print "Input needs to be an integer."
+          print("Input needs to be an integer.")
 
     return int(choice)
 
