@@ -22,6 +22,7 @@ except ImportError:
 DEFAULT_XML_PATH = '/usr/share/mobile-broadband-provider-info/serviceproviders.xml'
 DEFAULT_CONFIG_PATH = '/etc/wvdial.conf'
 DEFAULT_MODEM_DEVICE = '/dev/ttyUSB0'
+DEFAULT_PROFILE_NAME = 'DefaultProfile'
 
 
 class Mkwvconf:
@@ -116,7 +117,7 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
 
         parameters = self.parseProviderNode(apnNode)
         parameters["modem"] = self.getModemDevice()
-        parameters["profileName"] = self.getUserInput("Enter name for configuration: ", "DefaultProfile")
+        parameters["profileName"] = self.getProfileName()
 
         if self._configPathIsCustom:
             editConf = True
@@ -129,6 +130,9 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
         else:
             print("\n\nDone. Insert the following into %s and run '%s' to start the connection.\n\n" % (self.configPath, self.wvdialCommand(parameters)))
             print(self.formatConfig(parameters))
+
+    def getProfileName(self):
+        return self.getUserInput("Enter name for configuration (default is %s): " % DEFAULT_PROFILE_NAME, DEFAULT_PROFILE_NAME)
 
     def writeConfig(self, parameters):
         """append or replace the configuration section to wvdial.conf"""
@@ -222,7 +226,7 @@ Stupid Mode = 1
 
         choice = -1
         while choice >= count or choice < 0:
-            inputStr = self.getUserInput("%s [0-%d]:" % (prompt, count - 1))
+            inputStr = self.getUserInput("%s [0-%d]: " % (prompt, count - 1))
             try:
                 choice = atoi(inputStr)
                 if choice < 0 or choice >= count:
