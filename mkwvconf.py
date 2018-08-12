@@ -19,14 +19,12 @@ except ImportError:
     atoi = int
 
 
+DEFAULT_XML_PATH = '/usr/share/mobile-broadband-provider-info/serviceproviders.xml'
+DEFAULT_CONFIG_PATH = '/etc/wvdial.conf'
+DEFAULT_MODEM_DEVICE = '/dev/ttyUSB0'
+
+
 class Mkwvconf:
-
-    #########
-    # file paths
-    #########
-
-    xmlPath = '/usr/share/mobile-broadband-provider-info/serviceproviders.xml'
-    configPath = '/etc/wvdial.conf'
 
     #########
     # class members
@@ -45,8 +43,20 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
     # class methods
     #########
 
-    def __init__(self):
-        self.doc = ET.parse(self.xmlPath)
+    def __init__(self, opts=None):
+        opts = opts or {}
+
+        if 'configPath' in opts:
+            self.configPath = opts['configPath']
+            self._configPathIsCustom = True
+        else:
+            self.configPath = DEFAULT_CONFIG_PATH
+            self._configPathIsCustom = False
+
+        self.modemDevice = opts.get('modemDevice')
+
+        xmlPath = opts.get('xmlPath', DEFAULT_XML_PATH)
+        self.doc = ET.parse(xmlPath)
 
     def displayIntro(self):
         os.system('clear')
@@ -77,14 +87,14 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
 
     def getProviders(self, countryCode):
         """returns list of providers for countryCode"""
-        nodes = self.getNodesFromXml('country[@code=\'' + countryCode + '\']/provider/name')
+        nodes = self.getNodesFromXml("country[@code='%s']/provider/name" % countryCode)
         return [n.text for n in nodes]
 
     def selectProvider(self, countryCode):
         """lets user choose a provider and returns the chosen provider name"""
         providers = self.getProviders(countryCode)
 
-        index = self.getUserChoice(providers, "Providers for '" + countryCode + "':", "Choose a provider")
+        index = self.getUserChoice(providers, "Providers for '%s':" % countryCode, "Choose a provider")
         return providers[index]
 
     def selectApn(self, node):
@@ -101,25 +111,29 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
 
     def makeConfig(self, countryCode, provider):
         """get final information from user and assembles configuration section. the configuration is either written to wvdial.conf or printed for manual insertion"""
-        providerNode = self.getNodesFromXml("country[@code='" + countryCode + "']/provider[name='" + provider + "']")[0]
+        providerNode = self.getNodesFromXml("country[@code='%s']/provider[name='%s']" % (countryCode, provider))[0]
         apnNode = self.selectApn(providerNode)
 
         parameters = self.parseProviderNode(apnNode)
         parameters["modem"] = self.getModemDevice()
         parameters["profileName"] = self.getUserInput("Enter name for configuration: ", "DefaultProfile")
 
-        editConf = raw_input("\nDo you want me to try to modify " + self.configPath + " (you will need superuser rights)? Y/n: ")
-        os.system('clear')
-        if editConf in ["", "Y", "y"]:
+        if self._configPathIsCustom:
+            editConf = True
+        else:
+            editConf = raw_input("\nDo you want me to try to modify %s (you will need superuser rights)? Y/n: " % self.configPath) in ["", "Y", "y"]
+            os.system('clear')
+
+        if editConf:
             self.writeConfig(parameters)
         else:
-            print("\n\nDone. Insert the following into " + self.configPath + " and run 'wvdial " + parameters["profileName"] + "' to start the connection.\n\n")
+            print("\n\nDone. Insert the following into %s and run '%s' to start the connection.\n\n" % (self.configPath, self.wvdialCommand(parameters)))
             print(self.formatConfig(parameters))
 
     def writeConfig(self, parameters):
         """append or replace the configuration section to wvdial.conf"""
         if not os.path.exists(self.configPath):
-            print("\nWarning: " + self.configPath + " doesn't exist, creating new file.")
+            print("\nWarning: %s doesn't exist, creating new file." % self.configPath)
             f = open(self.configPath, 'w')
             f.close()
 
@@ -132,20 +146,31 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
         snippetStart = text.find("[Dialer %(profileName)s]" % parameters)
         if snippetStart != -1:
             snippetEnd = text.find("[Dialer ", snippetStart + 1)
-            print("\nThe following part of wvdial.conf will be replaced: \n\n" + text[snippetStart:snippetEnd])
-            print("by: \n\n" + section)
+            print("\nThe following part of wvdial.conf will be replaced: \n\n%s" % text[snippetStart:snippetEnd])
+            print("by: \n\n%s" % section)
             text = text.replace(text[snippetStart:snippetEnd], section)
         else:
-            print("\nThe following will be appended to wvdial.conf: \n\n" + section)
-            text += "\n" + section
+            print("\nThe following will be appended to wvdial.conf: \n\n%s" % section)
+            text += "\n%s" % section
 
-        editConf = raw_input("Write to file? Y/n: ")
-        if editConf in ["", "Y", "y"]:
+        if not self._configPathIsCustom:
+            editConf = raw_input("Write to file? Y/n: ") in ["", "Y", "y"]
+        else:
+            editConf = True
+
+        if editConf:
             f = open(self.configPath, 'w')
             f.write(text)
             f.close()
 
-            print("wvdial.conf edited successfully, run 'wvdial " + parameters["profileName"] + "' to start the connection.\n\n")
+            print("wvdial.conf edited successfully, run '%s' to start the connection.\n\n" % self.wvdialCommand(parameters))
+
+    def wvdialCommand(self, parameters):
+        args = []
+        if self.configPath != DEFAULT_CONFIG_PATH:
+            args.append('--config="%s"' % self.configPath)
+
+        return "wvdial %s %s" % (' '.join(args), parameters["profileName"])
 
     def formatConfig(self, parameters):
         """formats the information contained in parameters into a valid wvdial.conf format"""
@@ -171,14 +196,16 @@ Stupid Mode = 1
 
     def getModemDevice(self):
         """return modem location provided by user"""
-        defaultLocation = "/dev/ttyUSB0"
+        if self.modemDevice:
+            return self.modemDevice
+
         modemDevice = "initialValue"
 
         while not modemDevice.startswith("/dev/") or len(modemDevice) == 0:
-            modemDevice = self.getUserInput("Enter modem location (default is /dev/ttyUSB0): ", defaultLocation)
+            modemDevice = self.getUserInput("Enter modem location (default is %s): " % DEFAULT_MODEM_DEVICE, DEFAULT_MODEM_DEVICE)
 
         if len(modemDevice.strip()) == 0:
-            modemDevice = defaultLocation
+            modemDevice = DEFAULT_MODEM_DEVICE
 
         return modemDevice
 
@@ -191,15 +218,15 @@ Stupid Mode = 1
 
         count = len(l)
         for k, v in zip(range(count), l):
-            print(str(k) + ": " + v)
+            print('%s: %s' % (k, v))
 
         choice = -1
         while choice >= count or choice < 0:
-            inputStr = self.getUserInput(prompt + " [0-" + str(count - 1) + "]:")
+            inputStr = self.getUserInput("%s [0-%d]:" % (prompt, count - 1))
             try:
                 choice = atoi(inputStr)
                 if choice < 0 or choice >= count:
-                    print("Input needs to be between 0 and " + str(count - 1))
+                    print("Input needs to be between 0 and %d" % (count - 1))
             except ValueError:
                 choice = -1
                 print("Input needs to be an integer.")
@@ -214,7 +241,7 @@ Stupid Mode = 1
             inp = raw_input("\n" + prompt)
             if len(inp.strip()) == 0:
                 inp = default
-            accept = raw_input("Your choice: '" + inp + "'. Is this correct? Y/n: ")
+            accept = raw_input("Your choice: '%s'. Is this correct? Y/n: " % inp)
         return inp
 
     def parseProviderNode(self, apnNode):
@@ -235,11 +262,33 @@ Stupid Mode = 1
         return parameters
 
 
-if __name__ == "__main__":
+def _cli():
+    from argparse import ArgumentParser
+    from argparse import FileType
 
-    mkwvconf = Mkwvconf()
+    parser = ArgumentParser(description=Mkwvconf.introMessage)
+    parser.add_argument('--configPath', type=FileType('w'))
+    parser.add_argument('--xmlPath', type=FileType('r'))
+    parser.add_argument('--modemDevice', type=str)
+    args = parser.parse_args()
+
+    opts = {}
+    if args.configPath:
+        args.configPath.close()
+        opts['configPath'] = args.configPath.name
+    if args.xmlPath:
+        args.xmlPath.close()
+        opts['xmlPath'] = args.xmlPath.name
+    if args.modemDevice:
+        opts['modemDevice'] = args.modemDevice
+
+    mkwvconf = Mkwvconf(opts)
 
     mkwvconf.displayIntro()
     countryCode = mkwvconf.selectCountryCode()
     provider = mkwvconf.selectProvider(countryCode)
     mkwvconf.makeConfig(countryCode, provider)
+
+
+if __name__ == "__main__":
+    _cli()
