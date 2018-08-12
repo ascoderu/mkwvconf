@@ -17,3 +17,15 @@ install:
 script:
 - flake8 mkwvconf.py
 - bash test.sh
+
+before_deploy:
+- echo "${TRAVIS_TAG}" > version.txt
+
+deploy:
+  provider: pypi
+  on:
+    tags: true
+    repo: ascoderu/mkwvconf
+  user: Clemens.Wolff
+  password:
+    secure: aA6Yrmn7pFabm90gzIsWWlTkKPaA7vhwDXG5QPZOE5iMGNLGB97nQqCNAxqLXYw68XA72hVQayzm1AC72qjMJCjERQj2SytxfbhwjWMkcBqwat26WtJZjidDgJH58d1knyp5+q4qxWEKQdp2Pr/tKRrxZNza4ESTLEBsr8rf6e4VY6K2NuBAJnCoUHIymeupVj73jPoVN81In+bUlvv2386BuGH0fn/81vWTJnIewIcmU4Q3QXOyH43iyap5tuzgD/8hfyaoTVn0GnW1jRr+EXVSt8jCVaREguMLvJ8zWVKX6k/sbe1XXE0AN3kHwxDlOy7j7HBZnY/KgPx1UTzAJEZKnfHTXBqfjPmO2dUt76x+4OxotrvB91zyo60bRm5Y194QRdLvm6NGLIS3mQFONsX2m+LxTO3aAX6z01eYhzhzWE844/ydRcCbaKeFrcio79+EgSRMJyXMw23fnIccnAn0UsVLPZ7jknTInOWpsGGYFSs14+Qn3BZlv3Ivav3Np7N1Nj2DunFm6maNfImvKGZqmgzD2PZIUTeR1ho0dNFnIetK9+a9GiEhMmSSUV7sx4n7lMdSk6gsfx7+C5XkffgUT44OnraQXD1P6p+J+LJU3w+iV1NHG454jVKU/vhIdbM1WZ00BWcCoc3xzJsXMhkkUatuSnWhZXH+eCl75lE=
