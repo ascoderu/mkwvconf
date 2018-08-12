@@ -4,7 +4,7 @@ from setuptools import setup
 with open('version.txt') as fobj:
     version = fobj.read().strip()
 
-with open('README.md') as fobj:
+with open('README.rst') as fobj:
     long_description = fobj.read().strip()
 
 
