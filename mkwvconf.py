@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 import os
 
 try:
@@ -138,12 +139,11 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
         """append or replace the configuration section to wvdial.conf"""
         if not os.path.exists(self.configPath):
             print("\nWarning: %s doesn't exist, creating new file." % self.configPath)
-            f = open(self.configPath, 'w')
-            f.close()
+            with open(self.configPath, 'w') as f:
+                pass
 
-        f = open(self.configPath, 'r')
-        text = f.read()
-        f.close()
+        with open(self.configPath, 'r') as f:
+            text = f.read()
 
         section = self.formatConfig(parameters)
 
@@ -163,9 +163,8 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
             editConf = True
 
         if editConf:
-            f = open(self.configPath, 'w')
-            f.write(text)
-            f.close()
+            with open(self.configPath, 'w') as f:
+                f.write(text)
 
             print("wvdial.conf edited successfully, run '%s' to start the connection.\n\n" % self.wvdialCommand(parameters))
 
@@ -235,7 +234,7 @@ Stupid Mode = 1
                 choice = -1
                 print("Input needs to be an integer.")
 
-        return int(choice)
+        return choice
 
     def getUserInput(self, prompt, default=""):
         """utility method for getting user input. displays prompt, optional default fallback"""
