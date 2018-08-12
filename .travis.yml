@@ -1,5 +1,10 @@
 language: python
 
+addons:
+  apt:
+    packages:
+    - mobile-broadband-provider-info
+
 python:
 - "2.7"
 - "3.4"
@@ -11,3 +16,4 @@ install:
 
 script:
 - flake8 mkwvconf.py
+- bash test.sh
