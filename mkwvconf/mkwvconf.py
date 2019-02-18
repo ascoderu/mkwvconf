@@ -118,16 +118,13 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
 
     def makeConfig(self, countryCode, provider, apnname):
         """assembles configuration section. the configuration is either written to wvdial.conf or printed for manual insertion"""
-        parameters = self.parseProviderNode(countryCode, provider, apnname)
-        parameters["modem"] = self.getModemDevice()
-        parameters["profileName"] = self.getProfileName()
-
         if self._configPathIsCustom:
             editConf = True
         else:
             editConf = raw_input("\nDo you want me to try to modify %s (you will need superuser rights)? Y/n: " % self.configPath) in ["", "Y", "y"]
             os.system('clear')
 
+        parameters = self.getConfigParameters(countryCode, provider, apnname)
         section = self.formatConfig(parameters)
 
         if editConf:
@@ -135,6 +132,12 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
         else:
             print("\n\nDone. Insert the following into %s and run '%s' to start the connection.\n\n" % (self.configPath, self.wvdialCommand(parameters)))
             print(section)
+
+    def getConfigParameters(self, countryCode, provider, apnname):
+        parameters = self.parseProviderNode(countryCode, provider, apnname)
+        parameters["modem"] = self.getModemDevice()
+        parameters["profileName"] = self.getProfileName()
+        return parameters
 
     def getProfileName(self):
         if self.profileName:
