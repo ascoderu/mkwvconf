@@ -99,24 +99,25 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
         index = self.getUserChoice(providers, "Providers for '%s':" % countryCode, "Choose a provider")
         return providers[index]
 
-    def selectApn(self, node):
-        """takes a provider node, lets user select one apn (if several exist) and returns the chosen node"""
-        apns = node.findall("*/apn")
+    def getApns(self, countryCode, provider):
+        providerNode = self.getNodesFromXml("country[@code='%s']/provider[name='%s']" % (countryCode, provider))[0]
+        apns = providerNode.findall("*/apn")
         apnnames = [n.get("value") for n in apns]
+        return apnnames
 
-        apncount = len(apns)
+    def selectApn(self, countryCode, provider):
+        apnnames = self.getApns(countryCode, provider)
+
+        apncount = len(apnnames)
         if apncount == 1:
-            return apns[0]
+            return apnnames[0]
 
         index = self.getUserChoice(apnnames, "Available APNs:", "Choose an APN")
-        return apns[index]
+        return apnnames[index]
 
-    def makeConfig(self, countryCode, provider):
-        """get final information from user and assembles configuration section. the configuration is either written to wvdial.conf or printed for manual insertion"""
-        providerNode = self.getNodesFromXml("country[@code='%s']/provider[name='%s']" % (countryCode, provider))[0]
-        apnNode = self.selectApn(providerNode)
-
-        parameters = self.parseProviderNode(apnNode)
+    def makeConfig(self, countryCode, provider, apnname):
+        """assembles configuration section. the configuration is either written to wvdial.conf or printed for manual insertion"""
+        parameters = self.parseProviderNode(countryCode, provider, apnname)
         parameters["modem"] = self.getModemDevice()
         parameters["profileName"] = self.getProfileName()
 
@@ -247,8 +248,11 @@ Stupid Mode = 1
             accept = raw_input("Your choice: '%s'. Is this correct? Y/n: " % inp)
         return inp
 
-    def parseProviderNode(self, apnNode):
+    def parseProviderNode(self, countryCode, provider, apnname):
         """return initially filled parameter dictionary from provider xml node"""
+        providerNode = self.getNodesFromXml("country[@code='%s']/provider[name='%s']" % (countryCode, provider))[0]
+        apns = providerNode.findall("*/apn")
+        apnNode = [node for node in apns if node.get("value") == apnname][0]
         parameters = {}
 
         apn = apnNode.get("value")
@@ -290,7 +294,8 @@ def cli():
     mkwvconf.displayIntro()
     countryCode = mkwvconf.selectCountryCode()
     provider = mkwvconf.selectProvider(countryCode)
-    mkwvconf.makeConfig(countryCode, provider)
+    apnname = mkwvconf.selectApn(countryCode, provider)
+    mkwvconf.makeConfig(countryCode, provider, apnname)
 
 
 if __name__ == "__main__":
