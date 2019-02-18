@@ -127,16 +127,18 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
             editConf = raw_input("\nDo you want me to try to modify %s (you will need superuser rights)? Y/n: " % self.configPath) in ["", "Y", "y"]
             os.system('clear')
 
+        section = self.formatConfig(parameters)
+
         if editConf:
-            self.writeConfig(parameters)
+            self.writeConfig(parameters["profileName"], section)
         else:
             print("\n\nDone. Insert the following into %s and run '%s' to start the connection.\n\n" % (self.configPath, self.wvdialCommand(parameters)))
-            print(self.formatConfig(parameters))
+            print(section)
 
     def getProfileName(self):
         return self.getUserInput("Enter name for configuration (default is %s): " % DEFAULT_PROFILE_NAME, DEFAULT_PROFILE_NAME)
 
-    def writeConfig(self, parameters):
+    def writeConfig(self, profileName, section):
         """append or replace the configuration section to wvdial.conf"""
         if not os.path.exists(self.configPath):
             print("\nWarning: %s doesn't exist, creating new file." % self.configPath)
@@ -146,9 +148,7 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
         with open(self.configPath, 'r') as f:
             text = f.read()
 
-        section = self.formatConfig(parameters)
-
-        snippetStart = text.find("[Dialer %(profileName)s]" % parameters)
+        snippetStart = text.find("[Dialer %s]" % profileName)
         if snippetStart != -1:
             snippetEnd = text.find("[Dialer ", snippetStart + 1)
             print("\nThe following part of wvdial.conf will be replaced: \n\n%s" % text[snippetStart:snippetEnd])
@@ -167,14 +167,15 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
             with open(self.configPath, 'w') as f:
                 f.write(text)
 
-            print("wvdial.conf edited successfully, run '%s' to start the connection.\n\n" % self.wvdialCommand(parameters))
+            print("wvdial.conf edited successfully, run '%s' to start the connection.\n\n"
+                  % self.wvdialCommand(profileName))
 
-    def wvdialCommand(self, parameters):
+    def wvdialCommand(self, profileName):
         args = []
         if self.configPath != DEFAULT_CONFIG_PATH:
             args.append('--config="%s"' % self.configPath)
 
-        return "wvdial %s %s" % (' '.join(args), parameters["profileName"])
+        return "wvdial %s %s" % (' '.join(args), profileName)
 
     def formatConfig(self, parameters):
         """formats the information contained in parameters into a valid wvdial.conf format"""
