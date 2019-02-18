@@ -12,11 +12,11 @@ python:
 - "3.6"
 
 before_install:
-  - if [[ -n "${TRAVIS_TAG}" ]]; then echo "${TRAVIS_TAG}" > version.txt; fi
+- if [[ -n "${TRAVIS_TAG}" ]]; then echo "${TRAVIS_TAG}" > version.txt; fi
 
 install:
-  - python setup.py sdist
-  - pip install dist/mkwvconf-*.tar.gz
+- python setup.py sdist
+- pip install dist/mkwvconf-*.tar.gz
 
 before_script:
 - pip install flake8
