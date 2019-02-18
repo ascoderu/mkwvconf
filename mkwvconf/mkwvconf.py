@@ -56,6 +56,7 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
             self._configPathIsCustom = False
 
         self.modemDevice = opts.get('modemDevice')
+        self.profileName = opts.get('profileName')
 
         xmlPath = opts.get('xmlPath', DEFAULT_XML_PATH)
         self.doc = ET.parse(xmlPath)
@@ -136,6 +137,9 @@ Further reading on APNs can be found here: http://mail.gnome.org/archives/networ
             print(section)
 
     def getProfileName(self):
+        if self.profileName:
+            return self.profileName
+
         return self.getUserInput("Enter name for configuration (default is %s): " % DEFAULT_PROFILE_NAME, DEFAULT_PROFILE_NAME)
 
     def writeConfig(self, profileName, section):
@@ -278,6 +282,7 @@ def cli():
     parser.add_argument('--configPath', type=FileType('w'))
     parser.add_argument('--xmlPath', type=FileType('r'))
     parser.add_argument('--modemDevice', type=str)
+    parser.add_argument('--profileName', type=str)
     args = parser.parse_args()
 
     opts = {}
@@ -289,6 +294,8 @@ def cli():
         opts['xmlPath'] = args.xmlPath.name
     if args.modemDevice:
         opts['modemDevice'] = args.modemDevice
+    if args.profileName:
+        opts['profileName'] = args.profileName
 
     mkwvconf = Mkwvconf(opts)
 
