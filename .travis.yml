@@ -11,6 +11,9 @@ python:
 - "3.5"
 - "3.6"
 
+before_install:
+  - if [[ -n "${TRAVIS_TAG}" ]]; then echo "${TRAVIS_TAG}" > version.txt; fi
+
 install:
   - python setup.py sdist
   - pip install dist/mkwvconf-*.tar.gz
@@ -21,9 +24,6 @@ before_script:
 script:
 - flake8 mkwvconf
 - bash test.sh
-
-before_deploy:
-- echo "${TRAVIS_TAG}" > version.txt
 
 deploy:
   skip_cleanup: true
