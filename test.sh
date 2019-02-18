@@ -20,7 +20,7 @@ configPath="${configDir}/simpleConfiguration-actual.ini"
 expectedConfig="${configDir}/simpleConfiguration-expected.ini"
 
 echo -e "${countryCode}\n${provider}\nY\n${modemLocation}\nY\n${profileName}\nY\n" \
-| python mkwvconf.py --configPath="${configPath}"
+| python -m mkwvconf --configPath="${configPath}"
 
 cat > "${expectedConfig}" << EOF
 
@@ -54,7 +54,7 @@ configPath="${configDir}/apnConfiguration-actual.ini"
 expectedConfig="${configDir}/apnConfiguration-expected.ini"
 
 echo -e "${countryCode}\n${provider}\nY\n${apn}\nY\n${modemLocation}\nY\n${profileName}\nY\n" \
-| python mkwvconf.py --configPath="${configPath}"
+| python -m mkwvconf --configPath="${configPath}"
 
 cat > "${expectedConfig}" << EOF
 

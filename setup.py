@@ -1,4 +1,3 @@
-from setuptools import find_packages
 from setuptools import setup
 
 with open('version.txt') as fobj:
@@ -13,10 +12,14 @@ setup(
     version=version,
     author='Clemens Wolff',
     author_email='clemens.wolff+pypi@gmail.com',
-    packages=find_packages(),
+    packages=['mkwvconf'],
     url='https://github.com/ascoderu/mkwvconf',
     download_url='https://pypi.python.org/pypi/mkwvconf',
-    scripts=['mkwvconf.py'],
+    entry_points={
+        'console_scripts': [
+            'mkwvconf = mkwvconf.mkwvconf:cli',
+        ],
+    },
     license='Apache Software License',
     description=('Automatically generate a wvdial configuration for mobile '
                  'broadband devices using mobile-broadband-provider-info'),

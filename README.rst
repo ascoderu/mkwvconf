@@ -32,4 +32,4 @@ setup experience that generates a wvdial configuration file for you:
 
 .. sourcecode :: bash
 
-    mkwvconf.py
+    mkwvconf

@@ -265,7 +265,7 @@ Stupid Mode = 1
         return parameters
 
 
-def _cli():
+def cli():
     from argparse import ArgumentParser
     from argparse import FileType
 
@@ -294,4 +294,4 @@ def _cli():
 
 
 if __name__ == "__main__":
-    _cli()
+    cli()

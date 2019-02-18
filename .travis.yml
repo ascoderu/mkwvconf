@@ -15,7 +15,7 @@ install:
 - pip install flake8
 
 script:
-- flake8 mkwvconf.py
+- flake8 mkwvconf
 - bash test.sh
 
 before_deploy:
