@@ -24,7 +24,7 @@ setup(
     description=('Automatically generate a wvdial configuration for mobile '
                  'broadband devices using mobile-broadband-provider-info'),
     long_description=long_description,
-    python_requires='>=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*',
+    python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: Apache Software License',
