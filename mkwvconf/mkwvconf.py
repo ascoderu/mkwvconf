@@ -221,15 +221,15 @@ Stupid Mode = 1
 
         return modemDevice
 
-    def getUserChoice(self, l, header, prompt):
+    def getUserChoice(self, choices, header, prompt):
         """takes a string list, a text prompt and a header, and returns user choice"""
 
         print('')
         print(header)
         print('')
 
-        count = len(l)
-        for k, v in zip(range(count), l):
+        count = len(choices)
+        for k, v in zip(range(count), choices):
             print('%s: %s' % (k, v))
 
         choice = -1
