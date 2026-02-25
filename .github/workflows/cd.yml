@@ -25,7 +25,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install build and upload tools
-        run: pip install twine
+        run: pip install setuptools wheel twine
 
       - name: Build source distribution
         run: python setup.py sdist
