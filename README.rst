@@ -1,9 +1,6 @@
 mkwvconf
 ========
 
-.. image:: https://api.travis-ci.org/ascoderu/mkwvconf.svg?branch=master
-    :target: https://travis-ci.org/ascoderu/mkwvconf
-
 .. image:: https://img.shields.io/pypi/v/mkwvconf.svg
     :target: https://pypi.org/project/mkwvconf/
 
@@ -14,7 +11,7 @@ The :code:`mkwvconf.py` program is a tool that automatically generates a
 `wvdial <https://linux.die.net/man/1/wvdial>`_ configuration for mobile
 broadband devices using the `mobile-broadband-provider-info <https://github.com/GNOME/mobile-broadband-provider-info>`_ package.
 
-This repo is a fork of mkwvconf modified to work on Python 2.7 and later. The
+This repo is a fork of mkwvconf modified to work on Python 3.12 and later. The
 original mkwvconf can be found at `schuay/mkwvconf <https://github.com/schuay/mkwvconf>`_.
 
 Usage

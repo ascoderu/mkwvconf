@@ -1,0 +1,37 @@
+name: CD
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  deploy-pypi:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from git tag
+        run: |
+          VERSION=${GITHUB_REF##*/}
+          echo "Building version: $VERSION"
+          echo "$VERSION" > version.txt
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.12'
+
+      - name: Install build and upload tools
+        run: pip install twine
+
+      - name: Build source distribution
+        run: python setup.py sdist
+
+      - name: Upload to PyPI
+        run: twine upload --skip-existing dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN_MKWVCONF }}
