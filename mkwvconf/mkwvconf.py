@@ -286,6 +286,9 @@ def cli():
     parser.add_argument('--xmlPath', type=FileType('r'))
     parser.add_argument('--modemDevice', type=str)
     parser.add_argument('--profileName', type=str)
+    parser.add_argument('--countryCode', type=str, help='Country code (non-interactive mode)')
+    parser.add_argument('--provider', type=str, help='Provider name (non-interactive mode)')
+    parser.add_argument('--apn', type=str, help='APN name (non-interactive mode)')
     args = parser.parse_args()
 
     opts = {}
@@ -302,11 +305,19 @@ def cli():
 
     mkwvconf = Mkwvconf(opts)
 
-    mkwvconf.displayIntro()
-    countryCode = mkwvconf.selectCountryCode()
-    provider = mkwvconf.selectProvider(countryCode)
-    apnname = mkwvconf.selectApn(countryCode, provider)
-    mkwvconf.makeConfig(countryCode, provider, apnname)
+    # Non-interactive mode: all parameters provided via command-line
+    if args.countryCode and args.provider and args.apn:
+        countryCode = args.countryCode
+        provider = args.provider
+        apnname = args.apn
+        mkwvconf.makeConfig(countryCode, provider, apnname)
+    else:
+        # Interactive mode
+        mkwvconf.displayIntro()
+        countryCode = mkwvconf.selectCountryCode()
+        provider = mkwvconf.selectProvider(countryCode)
+        apnname = mkwvconf.selectApn(countryCode, provider)
+        mkwvconf.makeConfig(countryCode, provider, apnname)
 
 
 if __name__ == "__main__":

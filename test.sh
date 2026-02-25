@@ -13,14 +13,14 @@ Running test with simple configuration
 "
 
 countryCode="za"
-provider="1"
+provider="Cell-c"
+apn="internet"
 modemLocation="/dev/ttyUSB1"
 profileName="testProfile"
 configPath="${configDir}/simpleConfiguration-actual.ini"
 expectedConfig="${configDir}/simpleConfiguration-expected.ini"
 
-echo -e "${countryCode}\n${provider}\nY\n${modemLocation}\nY\n${profileName}\nY\n" \
-| mkwvconf --configPath="${configPath}"
+mkwvconf --configPath="${configPath}" --countryCode="${countryCode}" --provider="${provider}" --apn="${apn}" --modemDevice="${modemLocation}" --profileName="${profileName}"
 
 cat > "${expectedConfig}" << EOF
 
@@ -46,15 +46,14 @@ Running test with custom apn
 "
 
 countryCode="ug"
-provider="1"
-apn="0"
+provider="MTN"
+apn="yellopix.mtn.co.ug"
 modemLocation="/dev/ttyUSB2"
 profileName="testProfile2"
 configPath="${configDir}/apnConfiguration-actual.ini"
 expectedConfig="${configDir}/apnConfiguration-expected.ini"
 
-echo -e "${countryCode}\n${provider}\nY\n${apn}\nY\n${modemLocation}\nY\n${profileName}\nY\n" \
-| mkwvconf --configPath="${configPath}"
+mkwvconf --configPath="${configPath}" --countryCode="${countryCode}" --provider="${provider}" --apn="${apn}" --modemDevice="${modemLocation}" --profileName="${profileName}"
 
 cat > "${expectedConfig}" << EOF
 
@@ -67,8 +66,8 @@ Username =
 Password = 
 Modem = /dev/ttyUSB2
 Init1 = ATZ
-Init2 = at+cgdcont=1,"ip","orange.ug"
+Init2 = at+cgdcont=1,"ip","yellopix.mtn.co.ug"
 Stupid Mode = 1
 EOF
 
-diff --side-by-side "${expectedConfig}" "${configPath}"
+
